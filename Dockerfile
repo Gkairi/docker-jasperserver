@@ -1,24 +1,29 @@
-FROM tomcat:9.0-jre8
+#FROM docker-hub.artifactory-lvn.broadcom.net/tomcat:9.0.48-jdk11-adoptopenjdk-hotspot
+FROM docker-hub.artifactory-lvn.broadcom.net/tomcat:jdk8-adoptopenjdk-openj9
 MAINTAINER Nic Grange nicolas.grange@retrievercommunications.com 
 
 ENV JASPERSERVER_VERSION 7.2.0
 
 # Execute all in one layer so that it keeps the image as small as possible
-RUN wget "https://sourceforge.net/projects/jasperserver/files/JasperServer/JasperReports%20Server%20Community%20Edition%20${JASPERSERVER_VERSION}/TIB_js-jrs-cp_${JASPERSERVER_VERSION}_bin.zip/download" \
-         -O /tmp/jasperserver.zip  && \
-    unzip /tmp/jasperserver.zip -d /usr/src/ && \
-    rm /tmp/jasperserver.zip && \
-    mv /usr/src/jasperreports-server-cp-${JASPERSERVER_VERSION}-bin /usr/src/jasperreports-server && \
-    rm -r /usr/src/jasperreports-server/samples
+#RUN wget "https://sourceforge.net/projects/jasperserver/files/JasperServer/JasperReports%20Server%20Community%20Edition%20${JASPERSERVER_VERSION}/TIB_js-jrs-cp_${JASPERSERVER_VERSION}_bin.zip/download" \
+#         -O /tmp/jasperserver.zip  && \
+#    unzip /tmp/jasperserver.zip -d /usr/src/ && \
+#    rm /tmp/jasperserver.zip && \
+#    mv /usr/src/jasperreports-server-cp-${JASPERSERVER_VERSION}-bin /usr/src/jasperreports-server && \
+#    rm -r /usr/src/jasperreports-server/samples
 
 # To speed up local testing
 # Download manually the jasperreport server release to working dir
 # Uncomment ADD & RUN commands below and comment out above RUN command
-# ADD TIB_js-jrs-cp_${JASPERSERVER_VERSION}_bin.zip /tmp/jasperserver.zip
-# RUN unzip /tmp/jasperserver.zip -d /usr/src/ && \
-#    rm /tmp/jasperserver.zip && \
-#    mv /usr/src/jasperreports-server-cp-$JASPERSERVER_VERSION-bin /usr/src/jasperreports-server && \
-#    rm -r /usr/src/jasperreports-server/samples
+     ADD TIB_js-jrs_${JASPERSERVER_VERSION}_bin.zip /tmp/jasperserver.zip
+     RUN \
+     set -x &&\
+     apt-get update && \
+     apt-get install -y unzip && \
+     unzip /tmp/jasperserver.zip -d /usr/src/ && \
+     rm /tmp/jasperserver.zip && \
+     mv /usr/src/jasperreports-server-pro-$JASPERSERVER_VERSION-bin /usr/src/jasperreports-server && \ 
+     rm -r /usr/src/jasperreports-server/samples
 
 # Used to wait for the database to start before connecting to it
 # This script is from https://github.com/vishnubob/wait-for-it
@@ -31,8 +36,8 @@ ADD .do_deploy_jasperserver /.do_deploy_jasperserver
 
 #Execute all in one layer so that it keeps the image as small as possible
 RUN chmod a+x /entrypoint.sh && \
-    chmod a+x /wait-for-it.sh
-
+    chmod a+x /wait-for-it.sh && \
+    ls -lR  
 # This volume allows JasperServer export zip files to be automatically imported when bootstrapping
 VOLUME ["/jasperserver-import"]
 

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+ls -lR
+java -version
 # wait upto 30 seconds for the database to start before connecting
 /wait-for-it.sh $DB_HOST:$DB_PORT -t 30
 
@@ -23,9 +25,9 @@ if [ -f "/.do_deploy_jasperserver" ]; then
 
     # run the minimum bootstrap script to initial the JasperServer
     ./js-ant create-js-db || true #create database and skip it if database already exists
-    ./js-ant init-js-db-ce 
-    ./js-ant import-minimal-ce 
-    ./js-ant deploy-webapp-ce
+    ./js-ant init-js-db-pro 
+    ./js-ant import-minimal-pro
+    ./js-ant deploy-webapp-pro
 
     # bootstrap was successful, delete file so we don't bootstrap on subsequent restarts
     rm /.do_deploy_jasperserver
